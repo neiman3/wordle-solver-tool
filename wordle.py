@@ -150,6 +150,14 @@ while not correct:
         print("Only one word remains. The solution is", possible_words[0][0])
         break
     elif len(possible_words) == 0:
+        try:
+            score
+        except NameError:
+            pass
+        else:
+            if score == '!!!!!':
+                print("Congratulations, you solved the wordle.")
+                break
         print("There may be an error with your word selection or score. No possible words remain.")
         break
     else:
