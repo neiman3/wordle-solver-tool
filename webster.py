@@ -7,8 +7,10 @@ TEST_DICTIONARY = ['apple', 'ball', 'cat', 'aaab', 'bab', 'foo', 'apples']
 
 class WebsterDict:
     #
-    def __init__(self, path_to_file=DICT_FILENAME):
+    def __init__(self):
         self.head = Node()
+
+    def load(self, path_to_file=DICT_FILENAME):
         with open(path_to_file) as f:
             base_dictionary = json.load(f)
             for word in base_dictionary.keys():

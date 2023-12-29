@@ -3,10 +3,13 @@ import logging
 import datetime
 
 DEBUG = 1
-DICT = 'dictionaries/warpeace.json'
+DICTS = ['dictionaries/metamorphosis.json', 'dictionaries/warpeace.json', 'dictionaries/letterboxed.json','dictionaries/webster.json']
 
 
 def check_solution(letters, solution):
+    # Check solution- takes a list of letters ['a','s','d',...] and
+    # proposed solution ['came', 'eyes', 'sales', 'swayed', 'drive']
+    # and checks to see if the solution contains all characters in the letters array.
     if len(solution) == 0:
         return False
     result = []
@@ -28,6 +31,7 @@ def check_solution(letters, solution):
 
 
 def update_letters(letters, pos1, pos2):
+    # Returns a new letters array with a hit count (Unused, needs replacing) by side and letter index
     result = []
     for i in range(4):
         side = []
@@ -38,6 +42,7 @@ def update_letters(letters, pos1, pos2):
 
 
 def update_letters_by_value(letters, value):
+    # Returns a new letters array with a hit count (Unused, needs replacing) by value
     result = []
     for i in range(4):
         side = []
@@ -48,6 +53,7 @@ def update_letters_by_value(letters, value):
 
 
 def print_box(sides_list_o):
+    # display the letter boxed game board
     sides_list = [[y for y in x] for x in sides_list_o]
     SPACERS = 1
     print((" " * SPACERS).join([" "] + sides_list[0] + [" "]))
@@ -61,10 +67,8 @@ def print_box(sides_list_o):
 def generate_solutions(letters, dictionary, max_word_length, min_word_length, max_solution_steps, pointer=None,
                        solutions=[], working_solution=[], working_word=''):
 
-    if len(working_solution) > max_solution_steps:
-        return solutions
-
     if len(working_word) > max_word_length:
+        # If working word became too long (ie. game dictionary contains extremely long words)
         return solutions
 
     if pointer is None:
@@ -97,6 +101,10 @@ def generate_solutions(letters, dictionary, max_word_length, min_word_length, ma
         logging.debug("Found valid solution {}".format(working_solution))
         solutions.append(working_solution)
         return solutions
+    else:
+        if len(working_solution) == max_solution_steps:
+            # Exceeded max solution size- exit
+            return solutions
 
     for option in letter_options:
         if pointer.has_child(option):
@@ -117,16 +125,12 @@ def get_valid_options(letters, pointer):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     print("Letter boxed solver")
 
     max_word_length = 18
     min_word_length = 3
-    max_solution_steps = 5
-
-    # time calculation
-    start_time = datetime.datetime.now()
-
+    max_solution_steps = 4
 
     # Character entry
     letters = []
@@ -149,36 +153,44 @@ if __name__ == "__main__":
             break
         print(" ")
 
-    # load game dictionary
-    print("\nLoading game dictionary...")
-    mydict = WebsterDict(path_to_file=DICT)
-    # prune the tree using the letters
-    mydict.prune([x for x in entry])
-    # check number of possible game words for today
-    game_list = mydict.dump()
-    # text preview of game words
-    preview = 'no preview available'
-    if len(game_list) >= 4:
-        preview = "{}, {}...{}, {}".format(game_list[0],game_list[1], game_list[-2], game_list[-1])
-    print("Loaded {} valid dictionary words({})".format(len(game_list), preview))
-    del preview, game_list
-
-
-    # Now make permutations
-    # Expand list into tuple
-    print("Generating solutions...")
     letters = [[(y, 0) for y in x] for x in letters]
-    solution = generate_solutions(letters, mydict, max_word_length, min_word_length, max_solution_steps)
-    solution.sort(key=len)
-    td = (datetime.datetime.now() - start_time).seconds
-    timestring=[]
-    if td // 3600 > 0:
-        timestring += ['{:d} hr'.format(td // 3600)]
-    if td % 3600 != 0:
-        timestring += ['[{:d} min'.format((td % 3600) // 60)]
-    if td % 3600 % 60 != 0:
-        timestring += ['{:d} sec'.format(td % 3600 % 60)]
-        timestring = " ".join(timestring)
-    print("\nSearch completed in {}".format(timestring))
-    print("Found {} solutions (shortest length {})".format(len(solution), (len(solution[0]) if len(solution) > 0 else "n/a")))
-    print(solution[:min(10, len(solution))])
+
+    solution = []
+    for DICT in DICTS:
+
+        # time calculation
+        start_time = datetime.datetime.now()
+
+        # load game dictionary
+        print("\nLoading game dictionary... ({}/{} : {})".format(DICTS.index(DICT) + 1, len(DICTS), DICT.split('/')[-1].split('.')[0]))
+        mydict = WebsterDict()
+        mydict.load(DICT)
+        # prune the tree using the letters
+        mydict.prune([x for x in entry])
+        # check number of possible game words for today
+        game_list = mydict.dump()
+        # text preview of game words
+        preview = 'no preview available'
+        if len(game_list) >= 4:
+            preview = "{}, {}...{}, {}".format(game_list[0],game_list[1], game_list[-2], game_list[-1])
+        print("Loaded {} valid dictionary words({})".format(len(game_list), preview))
+        del preview, game_list
+
+
+        # Now make permutations
+        # Expand list into tuple
+        print("Generating solutions...")
+        solution = generate_solutions(letters, mydict, max_word_length, min_word_length, max_solution_steps, solutions=solution)
+        solution.sort(key=len)
+        td = (datetime.datetime.now() - start_time).seconds
+        timestring=[]
+        if td // 3600 > 0:
+            timestring += ['{:d} hr'.format(td // 3600)]
+        if td % 3600 // 60 > 0:
+            timestring += ['{:d} min'.format((td % 3600) // 60)]
+        if td % 3600 % 60 > 0:
+            timestring += ['{:d} sec'.format(td % 3600 % 60)]
+            timestring = " ".join(timestring)
+        print("\nSearch completed in {}".format(timestring))
+        print("Found {} solutions (shortest length {})".format(len(solution), (len(solution[0]) if len(solution) > 0 else "n/a")))
+        print(solution[:min(10, len(solution))])
