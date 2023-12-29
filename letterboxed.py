@@ -178,7 +178,7 @@ if __name__ == "__main__":
         timestring += ['[{:d} min'.format((td % 3600) // 60)]
     if td % 3600 % 60 != 0:
         timestring += ['{:d} sec'.format(td % 3600 % 60)]
-        timestring = (timestring)
-    print("\nSearch completed in {}".format())
+        timestring = " ".join(timestring)
+    print("\nSearch completed in {}".format(timestring))
     print("Found {} solutions (shortest length {})".format(len(solution), (len(solution[0]) if len(solution) > 0 else "n/a")))
     print(solution[:min(10, len(solution))])
