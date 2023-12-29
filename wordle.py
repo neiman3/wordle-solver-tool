@@ -91,9 +91,9 @@ def get_oxford_score(word, oxford):
         return 1
 
 
-freq_data = frequency_analysis("words.txt")
+freq_data = frequency_analysis("dictionaries/wordle_game_dictionary.txt")
 oxford = oxford_list()
-dict = build_dict("words.txt", freq_data)
+dict = build_dict("dictionaries/wordle_game_dictionary.txt", freq_data)
 
 possible_words = sorted(dict, key=lambda x: x[1])
 
