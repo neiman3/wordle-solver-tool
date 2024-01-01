@@ -2,7 +2,7 @@ from webster import WebsterDict
 import logging
 import datetime
 
-DEBUG = 1
+DEBUG = 0
 DICTS = ['dictionaries/metamorphosis.json', 'dictionaries/warpeace.json', 'dictionaries/letterboxed.json','dictionaries/webster.json']
 
 
@@ -133,8 +133,9 @@ if __name__ == "__main__":
     max_solution_steps = 4
 
     # Character entry
-    letters = []
+
     while True:
+        letters = []
         if not DEBUG:
             entry = input(
                 "Enter all characters, with or without spaces\n(clockwise, starting from top left corner)\n > ")
@@ -152,6 +153,16 @@ if __name__ == "__main__":
         if DEBUG or input('Ok? [y/n] > ').lower() == 'y':
             break
         print(" ")
+
+    if DEBUG:
+        max_solution_steps = 4
+    else:
+        try:
+            max_solution_steps = int(input('Max solution size > '))
+        except ValueError:
+            logging.warning("Invalid entry")
+            max_solution_steps = 4
+
 
     letters = [[(y, 0) for y in x] for x in letters]
 
@@ -190,7 +201,11 @@ if __name__ == "__main__":
             timestring += ['{:d} min'.format((td % 3600) // 60)]
         if td % 3600 % 60 > 0:
             timestring += ['{:d} sec'.format(td % 3600 % 60)]
-            timestring = " ".join(timestring)
+        if td == 0:
+            timestring += ['< 1 sec']
+        timestring = " ".join(timestring)
         print("\nSearch completed in {}".format(timestring))
         print("Found {} solutions (shortest length {})".format(len(solution), (len(solution[0]) if len(solution) > 0 else "n/a")))
-        print(solution[:min(10, len(solution))])
+        disp = solution[:min(10, len(solution))]
+        disp = ",\t\t".join([" -> ".join(x) for x in disp])
+        print(disp)
